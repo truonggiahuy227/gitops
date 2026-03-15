@@ -1,0 +1,120 @@
+
+nameOverride: ""
+fullnameOverride: "devops-challenge-truong-gia-huy"
+
+image:
+  registry: docker.io
+  repository: tghuy2/devops-challenge-truong-gia-huy-develop
+  tag: f9805d5
+  pullPolicy: IfNotPresent
+
+kind: Deployment
+
+revisionHistoryLimit: 10
+
+replicaCount: 3
+
+startupProbe:
+  enabled: false
+
+livenessProbe:
+  enabled: false
+
+readinessProbe:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+podSecurityContext:
+  enabled: true
+  fsGroupChangePolicy: Always
+  sysctls: []
+  supplementalGroups: []
+  fsGroup: 1001
+
+containerSecurityContext:
+  enabled: true
+  seLinuxOptions: {}
+  runAsUser: 1001
+  runAsGroup: 1001
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  seccompProfile:
+    type: RuntimeDefault
+  capabilities:
+    drop: ["ALL"]
+
+updateStrategy:
+  type: RollingUpdate
+
+podLabels:
+  commit-hash: "f9805d5" 
+
+affinity: 
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+        - key: commit-hash
+          operator: In
+          values:
+          - "f9805d5"
+      topologyKey: kubernetes.io/hostname
+
+nodeSelector: {}
+tolerations: []
+
+containerPorts:
+  - name: http
+    containerPort: 5000
+    protocol: TCP
+
+service:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 5000
+      targetPort: http
+      protocol: TCP
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  sessionAffinity: None
+
+terminationGracePeriodSeconds: 30
+
+serviceAccount:
+  create: false
+
+autoscaling:
+  enabled: false
+  minReplicas: 3
+  maxReplicas: 5
+  targetCPU: ""
+  targetMemory: ""
+
+pdb:
+  create: true
+  minAvailable: "3"
+  maxUnavailable: ""
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: ""
+      paths:
+        - path: /weatherforecast
+          pathType: Prefix
+  tls: []
+
+
+networkPolicy:
+  enabled: false
